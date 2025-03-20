@@ -13,16 +13,16 @@ export default defineConfig({
         name: 'PetalGlow',
         short_name: 'PetalGlow',
         description: 'Control your PetalGlow flower lamp',
-        theme_color: '#4a8505',
+        theme_color: '#B965E1',
         icons: [
           {
-            src: 'icons/icon-192x192.png',
+            src: 'icons/web-app-manifest-192x192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: 'icons/icon-512x512.png',
+            src: 'icons/web-app-manifest-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
