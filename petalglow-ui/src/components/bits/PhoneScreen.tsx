@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { mediaQuery } from '../../theme/theme';
+import { mediaQueryAbove } from '../../theme/theme';
 
 const StyledAppScreen = styled.div`
   width: 100%;
@@ -9,7 +9,7 @@ const StyledAppScreen = styled.div`
     height: 100vh;
   }
 
-  ${mediaQuery('tablet')} {
+  ${mediaQueryAbove('mobile')} {
     overflow: hidden;
     box-sizing: content-box;
     position: relative;

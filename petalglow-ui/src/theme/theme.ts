@@ -12,12 +12,12 @@ export type DeviceType = 'mobile' | 'tablet' | 'desktop';
 type MediaQuerySize = Record<DeviceType, string>;
 
 const sizes: MediaQuerySize = {
-  mobile: '425px',
+  mobile: '500px',
   tablet: '768px',
   desktop: '1050px',
 };
 
-export const mediaQuery = (key: DeviceType) => (
+export const mediaQueryAbove = (key: DeviceType) => (
   `@media (min-width: ${sizes[key]})`
 );
 
