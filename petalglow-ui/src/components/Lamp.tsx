@@ -2,12 +2,11 @@ import React, { Suspense, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
-import { DirectionalLight, Color } from 'three';
+import { DirectionalLight } from 'three';
 import Flower from './models/Flower';
 import Vase from './models/Vase';
-import { FlowerState } from '../App';
 import { useTheme } from '../theme/ThemeContext';
-import { useLamp } from './brains/useLamp';
+import { useLamp } from '../brains/useLamp';
 
 const LoadingFallback = () => {
   return (
@@ -57,9 +56,7 @@ const generateFlowerPositions = (nFlowers: number): {
 const Container = styled.div`
   min-height: 300px;
   height: 350px;
-  flex-grow: 1;
   width: 100%;
-  position: relative;
   overflow: hidden;
 `;
 

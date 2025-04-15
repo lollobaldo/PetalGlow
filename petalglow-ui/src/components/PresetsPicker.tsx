@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
 
 import { ColorPickersProps } from './ColorPickers';
-import { presets } from './brains/presets';
+import { presets } from '../brains/presets';
 import { HexColor, hexToHsva } from '@uiw/color-convert';
 import Slider from './bits/Slider';
 import Button from './bits/Button';
+import { useLamp } from '../brains/useLamp';
 
 const Label = styled.span`
   white-space: nowrap;
@@ -14,13 +15,13 @@ const Label = styled.span`
 
 const Container = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-evenly;
-  align-content: start;
-  gap: 16px;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
   padding: 16px;
+  padding-bottom: 0;
 `;
-
 
 const StyledColorGradient = styled.div<{ $background: string }>`
   flex: 1 1 150px; // all gradients same size
@@ -38,12 +39,13 @@ const StyledColorGradient = styled.div<{ $background: string }>`
 `;
 
 const StyledSettings = styled.div`
-  flex-basis: 100%;
+  flex: 0 0 auto;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 32px;
   padding: 16px;
+  margin-bottom: 16px;
 
   & > span { flex-grow: 1; }
   & > div { flex-grow: 4; }
@@ -53,10 +55,37 @@ const StyledSettings = styled.div`
   }
 `;
 
+const StyledPresets = styled.div`
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  gap: 16px;
+  padding: 8px;
+  padding-bottom: 0;
+  min-height: 0; /* Critical for proper flex container scrolling */
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+`;
+
 interface ColorGradientProps {
   name: string;
   colors: HexColor[];
-  onClick: () => void;
+  onClick: (colors: HexColor[]) => void;
 };
 
 const ColorGradient = ({ name, colors, onClick }: ColorGradientProps) => {
@@ -64,29 +93,35 @@ const ColorGradient = ({ name, colors, onClick }: ColorGradientProps) => {
   const colorComponents = colors.map((color, i) => `${color} ${i * step}%`)
   const background = `linear-gradient(90deg, ${colorComponents.join(', ')});`
   return (
-    <StyledColorGradient $background={background} onClick={onClick}>{name}</StyledColorGradient>
+    <StyledColorGradient $background={background}
+      onClick={() => onClick(colors)}>{name}</StyledColorGradient>
   );
 };
 
 const PresetsPicker = ({}: ColorPickersProps) => {
   const [speed, setSpeed] = useState(4);
+  const { sendPreset } = useLamp();
+
+  const callback = useCallback((colors: HexColor[]) => {
+    sendPreset(colors, speed);
+  }, [sendPreset, speed]);
 
   return (
-    <>
-      <Container>
-        <StyledSettings>
-          <div>
+    <Container>
+      <StyledSettings>
+        <div>
           <Label>Speed</Label>
-          <Slider color={hexToHsva('#ff8800')} value={speed} onChange={setSpeed} />            
-          </div>
-          <Button $color="red" onClick={() => {}}>Stop</Button>
-        </StyledSettings>
+          <Slider value={speed} onChange={setSpeed} />            
+        </div>
+        <Button $color="red" onClick={() => {}}>Stop</Button>
+      </StyledSettings>
+      <StyledPresets>
         {presets.map((preset) =>
           <ColorGradient key={preset.name} {...preset}
-            onClick={() => {}} />
+            onClick={callback} />
         )}
-      </Container>
-    </>
+      </StyledPresets>
+    </Container>
   );
 };
 

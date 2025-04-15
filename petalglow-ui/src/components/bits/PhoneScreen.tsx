@@ -6,7 +6,7 @@ const StyledAppScreen = styled.div`
   width: 100%;
 
   & #content {
-    height: 100%;
+    height: 100vh;
   }
 
   ${mediaQuery('tablet')} {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { GlobalStyle } from './styles';
 import Lamp from './components/Lamp';
 import Header from './components/Header';
@@ -6,15 +6,10 @@ import ColorPickers from './components/ColorPickers';
 import styled from 'styled-components';
 import { ThemeProvider, useTheme } from './theme/ThemeContext';
 import ResponsivePhoneScreen from './components/bits/PhoneScreen';
-import { LampProvider, useLamp } from './components/brains/useLamp';
-
-// Define the flower state interface
-export interface FlowerState {
-  color: string;
-  brightness: number;
-}
+import { LampProvider } from './brains/useLamp';
 
 const AppContainer = styled.div`
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -23,15 +18,14 @@ const AppContainer = styled.div`
 `;
 
 const ContentContainer = styled.div`
-  flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 `;
 
-// In AppContent component
 const AppContent: React.FC = () => {
   const { theme } = useTheme();
-  const { setSelectedFlowerIdx } = useLamp();
 
   return (
     <AppContainer>

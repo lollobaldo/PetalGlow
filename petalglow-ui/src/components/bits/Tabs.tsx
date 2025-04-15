@@ -20,22 +20,25 @@ const StyledTab = styled.li<any>`
   height: 100%;
 
   button {
-    cursor: pointer;
+    cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
     transition: color 0.3s;
-    color: ${(props) => (props.$isFocused ? "#000" : "#777")};
+    color: ${(props) => {
+      if (props.$disabled) return '#aaa';
+      return props.$isFocused ? "#000" : "#777";
+    }};
     border: none;
     width: 100%;
     height: 100%;
     font-size: large;
-
+    opacity: ${(props) => (props.$disabled ? 0.7 : 1)};
     background-color: rgba(0, 0, 0, 0);
   }
 `;
 
-export const Tab = ({ title, onClick, isFocused }: any) => {
+export const Tab = ({ title, onClick, isFocused, disabled }: any) => {
   return (
-    <StyledTab onClick={onClick} $isFocused={isFocused}>
-      <button>{title}</button>
+    <StyledTab onClick={disabled ? undefined : onClick} $isFocused={isFocused} $disabled={disabled}>
+      <button disabled={disabled}>{title}</button>
     </StyledTab>
   );
 };
@@ -79,6 +82,7 @@ const StyledSliders = styled.div<any>`
   flex-wrap: nowrap;
   align-items: start;
   width: 100%;
+  height: 100%;
 
   transform: translateX(${(props) => `${props.$offset}%`});
   transition: transform ${(props) => props.$duration}ms;

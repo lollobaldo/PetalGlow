@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import Slider from './bits/Slider';
 import { ColorPickersProps } from './ColorPickers';
 import Switch from './bits/Switch';
-import { GlobalState, useLamp } from './brains/useLamp';
+import { GlobalState, useLamp } from '../brains/useLamp';
 
 const Container = styled.div`
   height: 100%;

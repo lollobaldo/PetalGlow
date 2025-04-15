@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import Slider from './bits/Slider';
 import ColorPicker from './bits/ColorPicker';
 import { ColorPickersProps } from './ColorPickers';
-import { useLamp } from './brains/useLamp';
+import { useLamp } from '../brains/useLamp';
 import { hsvaToHex, hexToHsva } from '@uiw/color-convert';
 
 const Container = styled.div`

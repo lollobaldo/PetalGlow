@@ -4,7 +4,7 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { Group, Box3, Vector3, Mesh, MeshStandardMaterial } from 'three';
 
 const Vase: React.FC = () => {
-  const path = '/vase.obj';
+  const path = '/vase_small.obj';
   const ref = useRef<Group>(null);
   const loaded = useRef<boolean>(false);
   const vaseObj = useLoader(OBJLoader, path);
@@ -28,8 +28,10 @@ const Vase: React.FC = () => {
         child.material = new MeshStandardMaterial({ 
           // color: '#ff0000',
           emissiveIntensity: .6,
-          emissive: '#D3B7A7',
-          color: '#D3B7A7',
+          // emissive: '#D3B7A7',
+          // color: '#D3B7A7',
+          emissive: '#222',
+          color: '#222',
           roughness: .8,
         });
       }

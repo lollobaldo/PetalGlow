@@ -61,13 +61,10 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 3000,
+    port: 5173,
     hmr: {
-      protocol: 'ws',
-      host: '0.0.0.0',
-      port: 5173
+      clientPort: 5173
     },
-    // Add WebSocket to CORS allowed methods
     cors: true
   },
   resolve: {
