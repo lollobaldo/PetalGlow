@@ -14,9 +14,7 @@ const Container = styled.div`
   overflow-y: auto;
 `;
 
-export interface ColorPickersProps {}
-
-const ColorPickers: React.FC<ColorPickersProps> = () => {
+const ColorPickers: React.FC = () => {
   const [focusedIdx, setFocusedIdx] = useState(0);
   const { isAllGood } = usePetalGlowMqtt();
   

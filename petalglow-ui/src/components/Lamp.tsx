@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unknown-property */
 import React, { Suspense, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Canvas } from '@react-three/fiber';
@@ -60,13 +61,11 @@ const Container = styled.div`
   overflow: hidden;
 `;
 
-interface LampProps {
-}
-
-const Lamp: React.FC<LampProps> = ({}) => {
+const Lamp: React.FC = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const controlsRef = useRef<any>(null);
   const { theme } = useTheme();
-  const { flowersState, globalState, selectedFlowerIdx, setSelectedFlowerIdx } = useLamp();
+  const { solidColorState, globalState, selectedFlowerIdx, setSelectedFlowerIdx } = useLamp();
   
   // Create light ref to avoid recreating it on every render
   const lightRef = useRef<DirectionalLight>(null);
@@ -76,7 +75,7 @@ const Lamp: React.FC<LampProps> = ({}) => {
     lightRef.current.castShadow = true;
   }
 
-  const nFlowers = flowersState.length;
+  const nFlowers = solidColorState.colors.length;
 
   const handleFlowerClick = (index: number) => {
     console.log(`Flower ${index} clicked!`);
@@ -98,7 +97,7 @@ const Lamp: React.FC<LampProps> = ({}) => {
       controlsRef.current.setAzimuthalAngle(angle);
       controlsRef.current.update();
     }
-  }, [selectedFlowerIdx, controlsRef.current]);
+  }, [selectedFlowerIdx, nFlowers]);
   
   const { positions, rotations } = generateFlowerPositions(nFlowers);
   const normalisedBrightness = globalState.flowersBrightness / 7;
@@ -124,7 +123,7 @@ const Lamp: React.FC<LampProps> = ({}) => {
                 key={index}
                 position={positions[index]}
                 rotation={rotations[index]}
-                color={flowersState[index].color}
+                color={solidColorState.colors[index].color}
                 brightness={normalisedBrightness}
                 onClick={() => handleFlowerClick(index)}
               />

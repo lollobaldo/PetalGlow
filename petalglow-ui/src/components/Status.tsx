@@ -51,12 +51,10 @@ const Title = styled.h2`
   margin-bottom: 16px;
 `;
 
-type Status = 'success' | 'warning' | 'error';
+type Status = 'success' | 'warning' | 'error' | undefined;
 type StatusItem = { text: string, status: Status };
 
-export interface StatusProps {}
-
-const Status: React.FC<StatusProps> = () => {
+const Status: React.FC = () => {
   const { isConnected, lampState, hasError } = usePetalGlowMqtt();
 
   const mqttStatus: StatusItem =
@@ -64,16 +62,16 @@ const Status: React.FC<StatusProps> = () => {
       ? { text: 'Connected', status: 'success' }
       : hasError
         ? { text: 'Error', status: 'error' }
-        : { text: 'Disconnected', status: 'error' };
+        : { text: 'Offline', status: 'error' };
 
   const lampStatus: StatusItem = {
     'CONNECTED': { text: 'Connected', status: 'success' as const },
-    'DISCONNECTED': { text: 'Disconnected', status: 'error' as const },
+    'DISCONNECTED': { text: 'Offline', status: 'error' as const },
     'NONE': { text: 'Unknown', status: 'warning' as const },
   }[lampState.state];
 
   const dbm = lampState.dbm || -100;
-  const dbmStatus = dbm > -50 ? 'success' : dbm > -70 ? 'warning' : 'error';
+  const dbmStatus = (dbm > -50 ? 'success' : dbm > -70 ? 'warning' : dbm > -100 ? 'error' : undefined);
 
   return (
     <Container>

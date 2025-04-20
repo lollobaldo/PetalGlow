@@ -3,7 +3,7 @@ import React, { useState, useCallback, createContext, useContext, useEffect } fr
 import { usePetalGlowMqtt } from './usePetalGlowMqtt';
 import { HexColor, hexToHsva, hsvaToHsv } from '@uiw/color-convert';
 import { compose, scaleAndRound } from './utils';
-import { HsvColor } from 'react-colorful';
+import { presets } from './presets';
 
 export const FLOWER_COUNT = 1;
 
@@ -12,23 +12,28 @@ export interface FlowerState {
   brightness: number;
 }
 
+export interface SolidColorState {
+  colors: FlowerState[];
+}
+
+export interface AnimationState {
+  colors: HexColor[];
+  speed: number;
+}
+
 export interface GlobalState {
+  isAnimating: boolean;
   singleColor: boolean;
   setSingleColor: (newValue: boolean) => void;
   flowersBrightness: number;
   setFlowersBrightness: (newValue: number) => void;
   stemsBrightness: number;
   setStemsBrightness: (newValue: number) => void;
-  length: number;
-  setLength: (newValue: number) => void;
-  fadeIn: number;
-  setFadeIn: (newValue: number) => void;
-  fadeOut: number;
-  setFadeOut: (newValue: number) => void;
 }
 
 export interface LampState {
-  flowersState: FlowerState[];
+  solidColorState: SolidColorState;
+  animationState: AnimationState;
   globalState: GlobalState;
   selectedFlowerIdx: number;
 }
@@ -37,9 +42,7 @@ export interface LampState {
 export interface LampContextType extends LampState {
   setSelectedFlowerIdx: (index: number) => void;
   updateSelectedFlower: (newState: Partial<FlowerState>) => void;
-  updateFlower: (index: number, newState: Partial<FlowerState>) => void;
-  updateAllFlowers: (newState: Partial<FlowerState>) => void;
-  sendPreset: (colors: HexColor[], speed: number) => void;
+  startAnimation: (colors: HexColor[], speed: number) => void;
 }
 
 // Default flower colors and brightness
@@ -53,8 +56,14 @@ const defaultFlowers = [
   { color: "#ffddaa", brightness: 0.9 }, // Light peach
 ].slice(0, FLOWER_COUNT) as FlowerState[];
 
-// Create the context with a default undefined value
-const LampContext = createContext<LampContextType | undefined>(undefined);
+const defaultSolid = {
+  colors: defaultFlowers,
+};
+
+const defaultAnimation = {
+  speed: 4,
+  colors: presets[0].colors,
+};
 
 const toApiColor = (color: HexColor) => {
   const hsv = compose(hexToHsva, hsvaToHsv)(color);
@@ -65,9 +74,28 @@ const toApiColor = (color: HexColor) => {
   };
 };
 
+const buildSolidColorsPayload = (solidColorState: SolidColorState, stemsBrightness: number) => ({
+  mode: 'SOLID',
+  stemBrightness: scaleAndRound(stemsBrightness, 7, 255),
+  params: {
+    colors: solidColorState.colors.map(flower => flower.color).map(toApiColor),
+  }
+});
+
+const buildPresetPayload = (animationState: AnimationState, stemsBrightness: number) => ({
+  mode: 'FADE',
+  stemBrightness: scaleAndRound(stemsBrightness, 7, 255),
+  params: {
+    speed: scaleAndRound(animationState.speed, 7, 255),
+    colors: animationState.colors.map(toApiColor),
+  }
+});
+
 export const LampProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Flower states
-  const [flowersState, setFlowersState] = useState(defaultFlowers);
+  const [solidColorState, setSolidColorState] = useState(defaultSolid);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationState, setAnimationState] = useState(defaultAnimation);
   
   // Selected flower index
   const [selectedFlowerIdx, setSelectedFlowerIdx] = useState(0);
@@ -76,61 +104,48 @@ export const LampProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [singleColor, _setSingleColor] = useState(false);
   const [flowersBrightness, setFlowersBrightness] = useState(6);
   const [stemsBrightness, setStemsBrightness] = useState(6);
-  
-  // Add new state variables
-  const [length, setLength] = useState(4);
-  const [fadeIn, setFadeIn] = useState(5);
-  const [fadeOut, setFadeOut] = useState(3);
 
   // Initialize MQTT connection
   const { sendMqttData, isConnected } = usePetalGlowMqtt();
 
-  // Function to send MQTT updates
   const sendSolidColors = useCallback(() => {
     if (!isConnected) return;
-
-    // Create the MQTT payload
-    const payload = {
-      mode: 'SOLID',
-      params: {
-        colors: flowersState.map(flower => flower.color).map(toApiColor),
-      }
-    };
-
-    // Send the payload as JSON
+    const payload = buildSolidColorsPayload(solidColorState, stemsBrightness);
     sendMqttData(JSON.stringify(payload));
-  }, [flowersState, flowersBrightness, isConnected, sendMqttData]);
+  }, [isConnected, stemsBrightness, solidColorState, sendMqttData]);
 
-  const sendPreset = useCallback((colors: HexColor[], speed: number) => {
+  const sendPreset = useCallback(() => {
     if (!isConnected) return;
-    const payload = {
-      mode: 'FADE',
-      params: {
-        speed: scaleAndRound(speed, 7, 255),
-        colors: colors.map(toApiColor),
-      }
-    };
+    const payload = buildPresetPayload(animationState, stemsBrightness);
     sendMqttData(JSON.stringify(payload));
-  }, [flowersState, flowersBrightness, isConnected, sendMqttData]);
+  }, [isConnected, stemsBrightness, animationState, sendMqttData]);
+
+  const startAnimation = useCallback((colors: HexColor[], speed: number) => {
+    setIsAnimating(true);
+    setAnimationState({
+      speed,
+      colors: colors,
+    });
+  }, []);
 
   // Send MQTT update whenever relevant state changes
   useEffect(() => {
-    sendSolidColors();
-  }, [flowersState, flowersBrightness, sendSolidColors]);
+    isAnimating ? sendPreset() : sendSolidColors();
+  }, [isAnimating, sendPreset, sendSolidColors]);
 
   // Function to update a specific flower's state
   const updateFlower = useCallback((index: number, newState: Partial<FlowerState>) => {
-    setFlowersState(prevFlowers => {
-      const newFlowers = [...prevFlowers];
+    setSolidColorState(prevState => {
+      const newFlowers = [...prevState.colors];
       newFlowers[index] = { ...newFlowers[index], ...newState };
-      return newFlowers;
+      return { colors: newFlowers };
     });
   }, []);
 
   const updateAllFlowers = useCallback((newState: Partial<FlowerState>) => {
-    setFlowersState(prevFlowers => {
-      return prevFlowers.map(flower => ({ ...flower, ...newState }));
-    });
+    setSolidColorState(prevState => ({
+      colors: prevState.colors.map(flower => ({ ...flower, ...newState }))
+    }));
   }, []);
 
   // Function to update the selected flower
@@ -142,38 +157,30 @@ export const LampProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [singleColor, selectedFlowerIdx, updateFlower, updateAllFlowers]);
 
-  // Reset flowers to default state
   const setSingleColor = useCallback((newState: boolean) => {
     if (newState) {
-      updateAllFlowers(flowersState[0]);    
+      updateAllFlowers(solidColorState.colors[0]);    
     }
     _setSingleColor(newState);
-  }, []);
+  }, [solidColorState, updateAllFlowers]);
 
   // Create the context value
   const contextValue: LampContextType = {
-    flowersState,
+    solidColorState,
+    animationState,
     selectedFlowerIdx,
     globalState: {
+      isAnimating,
       singleColor,
       setSingleColor,
       flowersBrightness,
       setFlowersBrightness,
       stemsBrightness,
       setStemsBrightness,
-      // Add new state variables to globalState
-      length,
-      setLength,
-      fadeIn,
-      setFadeIn,
-      fadeOut,
-      setFadeOut,
     },
     setSelectedFlowerIdx,
     updateSelectedFlower,
-    updateFlower,
-    updateAllFlowers,
-    sendPreset,
+    startAnimation,
   };
 
   return (
@@ -182,6 +189,9 @@ export const LampProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </LampContext.Provider>
   );
 };
+
+// Create the context with a default undefined value
+const LampContext = createContext<LampContextType | undefined>(undefined);
 
 // Custom hook to use the lamp context
 export const useLamp = () => {
@@ -193,6 +203,3 @@ export const useLamp = () => {
   
   return context;
 };
-
-
-

@@ -1,4 +1,7 @@
+/* eslint-disable react/no-unknown-property */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 
 interface AxisHelperProps {
   length?: number;

@@ -8,13 +8,23 @@
 #define MODULE_NAME "CFade "
 
 FadeColors::FadeColors(int nLeds, JsonObject params): nLeds(nLeds) {
-    LOG_INFO(MODULE_NAME, "Starting FadeColors mode!");
-    colors.reserve(nLeds);
+    LOG_INFO(MODULE_NAME, "Starting FadeColors mode!");    
+
+    stemBrightness = params["stemBrightness"] | 128;
+    LOG_INFO(MODULE_NAME, "Stem brightness: " << stemBrightness);
 
     speed = params["speed"] | 128;  // Default to middle speed if not provided
     scale = params["scale"] | 5;    // Default to 5 seconds if not provided
     LOG_INFO(MODULE_NAME, "Speed: " << speed << ", Scale: " << scale);
     
+    // Add smoothing factor parameter with default value
+    smoothingFactor = params["smoothing"] | 0.85;  // Default smoothing factor (0.0-1.0)
+    LOG_INFO(MODULE_NAME, "Smoothing factor: " << smoothingFactor);
+    
+    // Initialize the lastStemBrightness with the configured brightness
+    lastStemBrightness = stemBrightness;
+    
+    colors.reserve(nLeds);
     JsonArray colorsArray = params["colors"];
     for (JsonVariant item : colorsArray) {
         JsonObject color = item.as<JsonObject>();
@@ -57,6 +67,22 @@ bool FadeColors::populateLeds(struct CRGB *leds, uint8_t *stemBrightness) {
         leds[i] = currentColor;
     }
 
+    /*
+    // Compute the ideal brightness for the stem
+    CRGB rgb = currentColor;
+    uint8_t luma = rgb.getLuma();
+    uint8_t targetBrightness = scale8_video(luma, this->stemBrightness);
+    
+    // Apply smoothing using exponential moving average
+    // newValue = (1-alpha) * oldValue + alpha * newReading
+    // where alpha is 1-smoothingFactor
+    float alpha = 1.0 - smoothingFactor;
+    lastStemBrightness = (smoothingFactor * lastStemBrightness) + (alpha * targetBrightness);
+    
+    // Set the output brightness to the smoothed value
+    *stemBrightness = round(lastStemBrightness);*/
+    *stemBrightness = this->stemBrightness;
+
     lastUpdate = currentTime;
     return true;  // Always update LEDs for this mode
 }
@@ -73,26 +99,4 @@ CHSV FadeColors::getInterpolatedColor(float pos) {
     CHSV color1 = colors[colorIndex1];
     CHSV color2 = colors[colorIndex2];
     return blend(color1, color2, blendAmount * 255, SHORTEST_HUES);
-/*
-    CHSV newColor = blend(color1, color1, blendAmount, SHORTEST_HUES);
-    
-    // Calculate the shortest path for hue interpolation
-    uint8_t h;
-    int16_t clockwiseDist = ((int16_t)color2.h - color1.h + 256) % 256;
-    
-    if (clockwiseDist <= 128) {
-        // Go clockwise - normal interpolation
-        h = blend8(color1.h, color2.h, blendAmount * 255);
-    } else {
-        // Go counterclockwise - wrap around
-        h = blend8(color1.h, color2.h, (1 - blendAmount) * 255);
-        h = blend8(color2.h, color1.h, (1 - blendAmount) * 255);
-    }
-    
-    // Normal interpolation for saturation and value
-    uint8_t s = blend8(color1.s, color2.s, blendAmount * 255);
-    uint8_t v = blend8(color1.v, color2.v, blendAmount * 255);
-    
-    return CHSV(h, s, v);
-    */
 }

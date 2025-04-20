@@ -1,8 +1,6 @@
 import React, { useId } from 'react';
 import { withTheme } from 'styled-components';
 import './switch.css';
-import { hexToHsva, HsvaColor, hsvaToHex } from '@uiw/color-convert';
-import { Theme } from '../../theme/theme';
 import { ThemeContextType } from '../../theme/ThemeContext';
 
 export interface SwitchProps {

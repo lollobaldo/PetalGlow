@@ -13,6 +13,7 @@ JumpColors::JumpColors(int nLeds, JsonObject params): nLeds(nLeds) {
 
     // Get parameters with defaults (all in 0-255 range)
     this->stemBrightness = params["stemBrightness"] | 128;
+    LOG_INFO(MODULE_NAME, "Stem brightness: " << this->stemBrightness);
     fadeInTime = params["fadeIn"] | 50;     // Default ~50/255 fade in
     fadeOutTime = params["fadeOut"] | 50;   // Default ~50/255 fade out
     lengthTime = params["length"] | 150;    // Default ~150/255 full color display

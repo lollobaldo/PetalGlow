@@ -1,4 +1,4 @@
-import { HexColor, hexToRgba } from "@uiw/color-convert";
+import { HexColor } from "@uiw/color-convert";
 
 export abstract class Preset {
   name: string;

@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 import Slider from './bits/Slider';
-import { ColorPickersProps } from './ColorPickers';
 import Switch from './bits/Switch';
-import { GlobalState, useLamp } from '../brains/useLamp';
+import { useLamp } from '../brains/useLamp';
 
 const Container = styled.div`
   height: 100%;
@@ -29,17 +28,11 @@ const Sliders = styled.div`
   grid-row-gap: 16px;
 `;
 
-export interface GlobalPickerProps {
-}
-
-const GlobalPicker = ({ }: ColorPickersProps) => {
+const GlobalPicker = () => {
   const { globalState } = useLamp();
   const { singleColor, setSingleColor } = globalState;
   const { flowersBrightness, setFlowersBrightness } = globalState;
   const { stemsBrightness, setStemsBrightness } = globalState;
-  const { length, setLength } = globalState;
-  const { fadeIn, setFadeIn } = globalState;
-  const { fadeOut, setFadeOut } = globalState;
 
   return (
     <Container>
@@ -51,11 +44,11 @@ const GlobalPicker = ({ }: ColorPickersProps) => {
         <Label>Stems Brightness</Label>
         <Slider value={stemsBrightness} onChange={setStemsBrightness} />
         <Label>Length</Label>
-        <Slider value={length} onChange={setLength} disabled={true} />
+        <Slider value={5} onChange={() => {}} disabled={true} />
         <Label>Fade In</Label>
-        <Slider value={fadeIn} onChange={setFadeIn} disabled={true} />
+        <Slider value={5} onChange={() => {}} disabled={true} />
         <Label>Fade Out</Label>
-        <Slider value={fadeOut} onChange={setFadeOut} disabled={true} />
+        <Slider value={5} onChange={() => {}} disabled={true} />
       </Sliders>
     </Container>
   );

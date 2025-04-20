@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unknown-property */
 import React, { useState, useRef, useEffect } from 'react';
 import { useLoader } from '@react-three/fiber';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';

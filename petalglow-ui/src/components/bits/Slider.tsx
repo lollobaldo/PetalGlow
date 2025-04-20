@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import styled, { withTheme } from "styled-components";
 import ReactSlider, { ReactSliderProps } from "react-slider";
-import { HsvaColor, hsvaToHex } from "@uiw/color-convert";
 import { ThemeContextType } from "../../theme/ThemeContext";
 
 const StyledSlider = styled(ReactSlider)<ReactSliderProps>`
@@ -61,6 +60,7 @@ const Slider = ({ value, onChange, theme,
   ...props
 }: SliderProps & ThemeContextType) => {
 
+  // eslint-disable-next-line react/display-name, @typescript-eslint/no-explicit-any
   const coloredThumb = useMemo(() => ({ key, ...props }: any) => (
     <StyledThumb {...props} key={key} $hex={color} />
   ), [color]);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import styled from "styled-components";
 
@@ -61,7 +62,7 @@ export const Tabs = ({ focusedIdx, children, onChange, duration = 300 }: any) =>
         React.cloneElement(child, {
           key: i,
           isFocused: focusedIdx === i,
-          onClick: (e) => {
+          onClick: () => {
             onChange(i);
           }
         })

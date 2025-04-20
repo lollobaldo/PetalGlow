@@ -1,10 +1,12 @@
+/* eslint-disable react/no-unknown-property */
 import React, { useRef, useEffect } from 'react';
 import { useLoader } from '@react-three/fiber';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { Group, Box3, Vector3, Mesh, MeshStandardMaterial } from 'three';
 
 const Vase: React.FC = () => {
-  const path = '/vase_small.obj';
+  // const path = '/vase_small.obj';
+  const path = '/vase.obj';
   const ref = useRef<Group>(null);
   const loaded = useRef<boolean>(false);
   const vaseObj = useLoader(OBJLoader, path);

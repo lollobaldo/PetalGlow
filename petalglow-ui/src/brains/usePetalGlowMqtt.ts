@@ -44,7 +44,7 @@ export const usePetalGlowMqtt = () => {
     };
     console.log(MQTT_SERVER, credentials);
     const mqttInstance = mqtt.connect(MQTT_SERVER, credentials);
-    mqttInstance.on('connect', () => {setStatus
+    mqttInstance.on('connect', () => {
       console.log('connected');
       setStatus('connected');
     });
@@ -77,7 +77,7 @@ export const usePetalGlowMqtt = () => {
   }, [client, isConnected, conn_topic]);
 
   const sendMqttData = useCallback((message: string | Buffer) => {
-    const opt: IClientPublishOptions = {};
+    const opt: IClientPublishOptions = { retain: true };
     console.log("Sending mqtt data. Topic: ", data_topic, " msg: ", message);
     status === 'connected' && client?.publish(data_topic, message, { ...opt });
   },[client, status, data_topic]);

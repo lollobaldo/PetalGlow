@@ -11,13 +11,20 @@
 #undef MODULE_NAME
 #define MODULE_NAME "LmpMan"
 
-#define FLOWERS_DATA_PIN 21
-#define STEMS_DATA_PIN 0
+#define FLOWERS_DATA_PIN 3
+// #define STEMS_DATA_PIN 4 // teensy
+// #define STEMS_DATA_PIN 0 // waveshare
+#define STEMS_DATA_PIN 6 // trial
+
+unsigned long fadeStartTime;
+unsigned long lastStemValue;
 
 LampManager::LampManager(Timer& timer_): timer(timer_) {
     LOG_INFO(MODULE_NAME, "Setting up Lamp Manager!");
     FastLED.addLeds<WS2812, FLOWERS_DATA_PIN, GRB>(leds, NUM_LEDS).setRgbw(RgbwDefault());
-    FastLED.setBrightness(128);
+    // FastLED.setBrightness(128);
+
+    fadeStartTime = millis();
     
     // Initialize the stem control pin
     pinMode(STEMS_DATA_PIN, OUTPUT);
@@ -54,8 +61,23 @@ void LampManager::loop() {
     bool hasChanged = currentMode.get()->populateLeds(leds, &stemValue);
     
     if(hasChanged) {
-        // LOG_INFO(MODULE_NAME, "Stem value: " << stemValue);
-        analogWrite(STEMS_DATA_PIN, 4*stemValue);
         FastLED.show();
+        stemValue = stemValue * stemValue / 255;
+        if (stemValue != lastStemValue) {
+            lastStemValue = stemValue;
+            analogWrite(STEMS_DATA_PIN, stemValue);
+        }
     }
+    // LOG_INFO(MODULE_NAME, "Stem: " << stemValue);
+
+    // unsigned long progress = millis() - fadeStartTime;
+    // long brightness = 0;
+    // if (progress <= 3000) brightness = map(progress, 0, 3000, 0, 255);
+    // else if (progress <= 6000) brightness = map(6000 - progress, 0, 3000, 0, 255);
+    // else fadeStartTime = millis(); // restart fade again
+    // if (brightness != lastStemValue) {
+    //     lastStemValue = brightness;
+    //     analogWrite(STEMS_DATA_PIN, brightness * brightness / 255);
+    // }
+    // delay(50);
 }

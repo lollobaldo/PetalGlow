@@ -1,9 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
-
-import { ColorPickersProps } from './ColorPickers';
 import { presets } from '../brains/presets';
-import { HexColor, hexToHsva } from '@uiw/color-convert';
+import { HexColor } from '@uiw/color-convert';
 import Slider from './bits/Slider';
 import Button from './bits/Button';
 import { useLamp } from '../brains/useLamp';
@@ -98,13 +96,13 @@ const ColorGradient = ({ name, colors, onClick }: ColorGradientProps) => {
   );
 };
 
-const PresetsPicker = ({}: ColorPickersProps) => {
+const PresetsPicker = () => {
   const [speed, setSpeed] = useState(4);
-  const { sendPreset } = useLamp();
+  const { startAnimation } = useLamp();
 
   const callback = useCallback((colors: HexColor[]) => {
-    sendPreset(colors, speed);
-  }, [sendPreset, speed]);
+    startAnimation(colors, speed);
+  }, [startAnimation, speed]);
 
   return (
     <Container>
