@@ -28,7 +28,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     document!.querySelector('meta[name=theme-color]')!.setAttribute('content',
       theme.colors.bg.secondary);
-  }, [themeEnums.color]);
+  }, [theme.colors.bg.secondary, themeEnums.color]);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, themeEnums }}>
