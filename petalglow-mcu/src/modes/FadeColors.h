@@ -18,6 +18,7 @@ class FadeColors : public ModeController {
     std::vector<CHSV> colors;
     uint64_t start;
     uint16_t speedMs;     // milliseconds to shift one color
+    bool set = false;
     
     CHSV getInterpolatedColor(float position);
 };

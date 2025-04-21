@@ -29,7 +29,9 @@ FadeColors::FadeColors(int nLeds, JsonObject params): nLeds(nLeds) {
     speedMs = speed * 100L;
     uint64_t fullCycleLength = speedMs * colors.size();
     start = startRaw % fullCycleLength;
-    LOG_INFO(MODULE_NAME, "Speed: " << speedMs << "ms. Start: " << startRaw << " (norm " << start << ")");
+    uint64_t currentTime = utils::get_time_ms();
+    uint64_t drift = currentTime - startRaw;
+    LOG_INFO(MODULE_NAME, "Speed: " << speedMs << "ms. Start: " << start << " (Raw " << startRaw << ", drift " << drift << ")");
 }
 
 bool FadeColors::populateLeds(struct CRGB *leds, uint8_t *stemBrightness) {
@@ -41,7 +43,10 @@ bool FadeColors::populateLeds(struct CRGB *leds, uint8_t *stemBrightness) {
     
     uint64_t fullCycleLength = speedMs * colors.size();
     uint64_t currentTime = utils::get_time_ms() % fullCycleLength;
-    uint64_t elapsed = currentTime + fullCycleLength - start; // hack to avoid underflow
+    while (currentTime < start) {
+        currentTime += fullCycleLength;
+    }
+    uint64_t elapsed = currentTime - start; // hack to avoid underflow
 
     // Calculate how much to move the position
     float position = (float)elapsed / speedMs;
@@ -49,6 +54,18 @@ bool FadeColors::populateLeds(struct CRGB *leds, uint8_t *stemBrightness) {
     int size = colors.size();
     while (position >= size) {
         position -= size;
+    }
+
+    if(!set){
+        // Log all variables
+        LOG_INFO(MODULE_NAME, "Full cycle length: " << fullCycleLength);
+        LOG_INFO(MODULE_NAME, "Current time: " << currentTime);
+        LOG_INFO(MODULE_NAME, "Elapsed: " << elapsed);
+        LOG_INFO(MODULE_NAME, "Start: " << start);
+        LOG_INFO(MODULE_NAME, "Speed: " << speedMs);
+        LOG_INFO(MODULE_NAME, "Colors size: " << size);
+        LOG_INFO(MODULE_NAME, "Position: " << position);
+        set = true;
     }
     
     // Update all LEDs with the interpolated color
