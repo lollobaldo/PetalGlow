@@ -2,6 +2,8 @@
 #include <FastLED.h>
 #include <Logger.h>
 
+#include "utils.h"
+
 #include "FadeColors.h"
 
 #undef MODULE_NAME
@@ -13,28 +15,21 @@ FadeColors::FadeColors(int nLeds, JsonObject params): nLeds(nLeds) {
     stemBrightness = params["stemBrightness"] | 128;
     LOG_INFO(MODULE_NAME, "Stem brightness: " << stemBrightness);
 
-    speed = params["speed"] | 128;  // Default to middle speed if not provided
-    scale = params["scale"] | 5;    // Default to 5 seconds if not provided
-    LOG_INFO(MODULE_NAME, "Speed: " << speed << ", Scale: " << scale);
-    
-    // Add smoothing factor parameter with default value
-    smoothingFactor = params["smoothing"] | 0.85;  // Default smoothing factor (0.0-1.0)
-    LOG_INFO(MODULE_NAME, "Smoothing factor: " << smoothingFactor);
-    
-    // Initialize the lastStemBrightness with the configured brightness
-    lastStemBrightness = stemBrightness;
-    
-    colors.reserve(nLeds);
     JsonArray colorsArray = params["colors"];
+    colors.reserve(colorsArray.size());
     for (JsonVariant item : colorsArray) {
         JsonObject color = item.as<JsonObject>();
         CHSV hsv = CHSV(color["h"], color["s"], color["v"]);
         LOG_INFO(MODULE_NAME, "Color: hsv(" << hsv.h << ", " << hsv.s << ", " << hsv.v <<")");
         colors.push_back(hsv);
     }
-    // Initialize position and timing
-    position = 0.0;
-    lastUpdate = millis();
+
+    uint64_t startRaw = params["start"].as<unsigned long long>() | millis();
+    uint8_t speed = params["speed"] | 128;  // Default to middle speed if not provided
+    speedMs = speed * 100L;
+    uint64_t fullCycleLength = speedMs * colors.size();
+    start = startRaw % fullCycleLength;
+    LOG_INFO(MODULE_NAME, "Speed: " << speedMs << "ms. Start: " << startRaw << " (norm " << start << ")");
 }
 
 bool FadeColors::populateLeds(struct CRGB *leds, uint8_t *stemBrightness) {
@@ -44,21 +39,16 @@ bool FadeColors::populateLeds(struct CRGB *leds, uint8_t *stemBrightness) {
         return false;
     }
     
-    unsigned long currentTime = millis();
-    unsigned long elapsed = currentTime - lastUpdate;
-    
+    uint64_t fullCycleLength = speedMs * colors.size();
+    uint64_t currentTime = utils::get_time_ms() % fullCycleLength;
+    uint64_t elapsed = currentTime + fullCycleLength - start; // hack to avoid underflow
+
     // Calculate how much to move the position
-    // Higher speed = faster movement
-    // Scale converts to seconds for a full cycle at max speed
-    float maxSpeedInMs = scale * 1000.0;
-    float speedFactor = speed / 255.0;
-    float moveAmount = (elapsed / maxSpeedInMs) * speedFactor * colors.size();
-    
-    position += moveAmount;
-    
+    float position = (float)elapsed / speedMs;
     // Wrap around when we exceed the number of colors
-    while (position >= colors.size()) {
-        position -= colors.size();
+    int size = colors.size();
+    while (position >= size) {
+        position -= size;
     }
     
     // Update all LEDs with the interpolated color
@@ -67,23 +57,7 @@ bool FadeColors::populateLeds(struct CRGB *leds, uint8_t *stemBrightness) {
         leds[i] = currentColor;
     }
 
-    /*
-    // Compute the ideal brightness for the stem
-    CRGB rgb = currentColor;
-    uint8_t luma = rgb.getLuma();
-    uint8_t targetBrightness = scale8_video(luma, this->stemBrightness);
-    
-    // Apply smoothing using exponential moving average
-    // newValue = (1-alpha) * oldValue + alpha * newReading
-    // where alpha is 1-smoothingFactor
-    float alpha = 1.0 - smoothingFactor;
-    lastStemBrightness = (smoothingFactor * lastStemBrightness) + (alpha * targetBrightness);
-    
-    // Set the output brightness to the smoothed value
-    *stemBrightness = round(lastStemBrightness);*/
     *stemBrightness = this->stemBrightness;
-
-    lastUpdate = currentTime;
     return true;  // Always update LEDs for this mode
 }
 

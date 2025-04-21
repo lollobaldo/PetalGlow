@@ -1,10 +1,11 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import styled from 'styled-components';
 import { presets } from '../brains/presets';
 import { HexColor } from '@uiw/color-convert';
 import Slider from './bits/Slider';
 import Button from './bits/Button';
 import { useLamp } from '../brains/useLamp';
+import { scaleAndRoundFull } from '../brains/utils';
 
 const Label = styled.span`
   white-space: nowrap;
@@ -97,19 +98,23 @@ const ColorGradient = ({ name, colors, onClick }: ColorGradientProps) => {
 };
 
 const PresetsPicker = () => {
-  const [speed, setSpeed] = useState(4);
-  const { startAnimation } = useLamp();
+  const { animationState, startAnimation, setAnimationSpeed } = useLamp();
+
+  const speedTick = scaleAndRoundFull(animationState.speed, 1, 255, 7, 0);
+  const onSpeedChange = (newSpeed) => {
+    setAnimationSpeed(scaleAndRoundFull(newSpeed, 7, 0, 1, 255))
+  };
 
   const callback = useCallback((colors: HexColor[]) => {
-    startAnimation(colors, speed);
-  }, [startAnimation, speed]);
+    startAnimation(colors, animationState.speed);
+  }, [startAnimation, animationState.speed]);
 
   return (
     <Container>
       <StyledSettings>
         <div>
           <Label>Speed</Label>
-          <Slider value={speed} onChange={setSpeed} />            
+          <Slider value={speedTick} onChange={onSpeedChange} />            
         </div>
         <Button $color="red" onClick={() => {}}>Stop</Button>
       </StyledSettings>

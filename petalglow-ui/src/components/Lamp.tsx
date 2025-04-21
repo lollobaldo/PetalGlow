@@ -8,6 +8,7 @@ import Flower from './models/Flower';
 import Vase from './models/Vase';
 import { useTheme } from '../theme/ThemeContext';
 import { useLamp } from '../brains/useLamp';
+import AnimatedFlower from './models/AnimatedFlower';
 
 const LoadingFallback = () => {
   return (
@@ -65,7 +66,8 @@ const Lamp: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const controlsRef = useRef<any>(null);
   const { theme } = useTheme();
-  const { solidColorState, globalState, selectedFlowerIdx, setSelectedFlowerIdx } = useLamp();
+  const { animationState, solidColorState, globalState,
+    selectedFlowerIdx, setSelectedFlowerIdx } = useLamp();
   
   // Create light ref to avoid recreating it on every render
   const lightRef = useRef<DirectionalLight>(null);
@@ -119,7 +121,14 @@ const Lamp: React.FC = () => {
           <group position={[0, 0, 0]}>
             <Vase />
             {Array.from({ length: nFlowers }).map((_, index) => (
-              <Flower
+              globalState.isAnimating
+              ? <AnimatedFlower
+                key={index}
+                animationState={animationState}
+                position={positions[index]}
+                rotation={rotations[index]}
+              />
+              : <Flower
                 key={index}
                 position={positions[index]}
                 rotation={rotations[index]}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#define ARDUINOJSON_USE_LONG_LONG 1
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 #include <WebServer.h>
@@ -10,6 +11,7 @@
 typedef std::function<void(byte* payload, unsigned int length)> DataCallback;
 
 class MqttManager {
+    inline static const char* SNTP_SERVER = "pool.ntp.org";
     inline static const char* CONNECTED = "CONNECTED";
     inline static const char* DISCONNECTED_MSG = "{\"state\":\"DISCONNECTED\"}";
 
@@ -28,6 +30,7 @@ class MqttManager {
 
     void reconnect();
     void setupWifi();
+    void setupNtp();
     String buildConnectedMsg();
     void onMqttMsg(char* topic, byte* payload, unsigned int length);
 

@@ -16,10 +16,10 @@ interface FlowerProps {
 }
 
 const Flower: React.FC<FlowerProps> = ({ 
-  position, 
-  rotation, 
-  color, 
-  brightness, 
+  position,
+  rotation,
+  color,
+  brightness,
   onClick,
 }) => {
   const ref = useRef<Group>(null);

@@ -18,7 +18,8 @@ export interface SolidColorState {
 
 export interface AnimationState {
   colors: HexColor[];
-  speed: number;
+  speed: number; // 1-255 10th of a second to shift one color
+  start: number; // unix millis of animation start
 }
 
 export interface GlobalState {
@@ -43,6 +44,7 @@ export interface LampContextType extends LampState {
   setSelectedFlowerIdx: (index: number) => void;
   updateSelectedFlower: (newState: Partial<FlowerState>) => void;
   startAnimation: (colors: HexColor[], speed: number) => void;
+  setAnimationSpeed: (speed: number) => void;
 }
 
 // Default flower colors and brightness
@@ -63,6 +65,7 @@ const defaultSolid = {
 const defaultAnimation = {
   speed: 4,
   colors: presets[0].colors,
+  start: Date.now(),
 };
 
 const toApiColor = (color: HexColor) => {
@@ -86,8 +89,9 @@ const buildPresetPayload = (animationState: AnimationState, stemsBrightness: num
   mode: 'FADE',
   stemBrightness: scaleAndRound(stemsBrightness, 7, 255),
   params: {
-    speed: scaleAndRound(animationState.speed, 7, 255),
     colors: animationState.colors.map(toApiColor),
+    speed: animationState.speed,
+    start: animationState.start,
   }
 });
 
@@ -103,7 +107,7 @@ export const LampProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Global states
   const [singleColor, _setSingleColor] = useState(false);
   const [flowersBrightness, setFlowersBrightness] = useState(6);
-  const [stemsBrightness, setStemsBrightness] = useState(6);
+  const [stemsBrightness, setStemsBrightness] = useState(2);
 
   // Initialize MQTT connection
   const { sendMqttData, isConnected } = usePetalGlowMqtt();
@@ -124,14 +128,22 @@ export const LampProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAnimating(true);
     setAnimationState({
       speed,
+      start: Date.now(),
       colors: colors,
     });
   }, []);
 
+  const setAnimationSpeed = useCallback((speed: number) => {
+    setAnimationState((prevState) => ({ ...prevState, speed }));
+  }, []);
+
   // Send MQTT update whenever relevant state changes
   useEffect(() => {
-    isAnimating ? sendPreset() : sendSolidColors();
-  }, [isAnimating, sendPreset, sendSolidColors]);
+    !isAnimating && sendSolidColors();
+  }, [isAnimating, sendSolidColors]);
+  useEffect(() => {
+    isAnimating && sendPreset();
+  }, [isAnimating, sendPreset]);
 
   // Function to update a specific flower's state
   const updateFlower = useCallback((index: number, newState: Partial<FlowerState>) => {
@@ -181,6 +193,7 @@ export const LampProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSelectedFlowerIdx,
     updateSelectedFlower,
     startAnimation,
+    setAnimationSpeed,
   };
 
   return (

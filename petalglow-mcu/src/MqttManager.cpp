@@ -94,6 +94,10 @@ void MqttManager::setupWifi() {
     }
 }
 
+void MqttManager::setupNtp() {
+    configTime(0, 0, SNTP_SERVER);
+}
+
 void MqttManager::reconnect() {
     int retries = 0;
     while (!mqttClient.connected() && retries < 3) {
@@ -136,6 +140,7 @@ void MqttManager::loop() {
         }
     }
     else if (!mqttClient.connected()) {
+        setupNtp();
         reconnect();
     }
     else {

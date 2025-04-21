@@ -1,5 +1,6 @@
 #include <Arduino.h>    
 #include <Logger.h>
+#include <time.h>
 
 // Hack to detect if temperature sensor is supported
 #ifdef TSENS_ADC_FACTOR
@@ -10,6 +11,12 @@
 
 #undef MODULE_NAME
 #define MODULE_NAME "Utils "
+
+uint64_t utils::get_time_ms() {
+    struct timeval tv_now;
+    gettimeofday(&tv_now, NULL);
+    return (uint64_t)tv_now.tv_sec * 1000L + (uint64_t)tv_now.tv_usec / 1000L;
+};
 
 float utils::get_temp_stats() {
     return temperatureRead();

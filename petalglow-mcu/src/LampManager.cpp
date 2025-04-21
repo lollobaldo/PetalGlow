@@ -22,7 +22,6 @@ unsigned long lastStemValue;
 LampManager::LampManager(Timer& timer_): timer(timer_) {
     LOG_INFO(MODULE_NAME, "Setting up Lamp Manager!");
     FastLED.addLeds<WS2812, FLOWERS_DATA_PIN, GRB>(leds, NUM_LEDS).setRgbw(RgbwDefault());
-    // FastLED.setBrightness(128);
 
     fadeStartTime = millis();
     
