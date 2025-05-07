@@ -32,26 +32,29 @@ const LoadingFallback = () => {
   );
 };
 
-const generateFlowerPositions = (nFlowers: number): {
+const generateFlowerPositions = (nFlowers: number, hasCenterFlower: boolean): {
   positions: [number, number, number][], rotations: [number, number, number][]
 } => {
   const positions: [number, number, number][] = [];
   const rotations: [number, number, number][] = [];
 
   // Outer flowers in a circle
+  const nFlowersAround = hasCenterFlower ? nFlowers - 1 : nFlowers;
   const radius = .5;
   const tiltAngle = 15 * (Math.PI / 180); // 15 degrees in radians
   
-  for (let i = 0; i < nFlowers - 1; i++) {
-    const angle = (2 * Math.PI / (nFlowers - 1)) * i;
+  for (let i = 0; i < nFlowersAround; i++) {
+    const angle = (2 * Math.PI / nFlowersAround) * i;
     const sin = Math.sin(angle);
     const cos = Math.cos(angle);
     positions.push([radius * sin, 0, radius * cos]);
     rotations.push([tiltAngle * cos, 0, -tiltAngle * sin]);
   }
-  // Center flower
-  positions.push([0, 0.2, 0]);
-  rotations.push([0, 0, 0 ]);
+  if(hasCenterFlower) {
+    // Center flower
+    positions.push([0, 0.2, 0]);
+    rotations.push([0, 0, 0 ]);
+  }
   return { positions, rotations };
 }
 
@@ -78,30 +81,32 @@ const Lamp: React.FC = () => {
   }
 
   const nFlowers = solidColorState.colors.length;
+  const hasCenterFlower = nFlowers > 3;
 
   const handleFlowerClick = (index: number) => {
     console.log(`Flower ${index} clicked!`);
     // Select the flower for color picker
     setSelectedFlowerIdx(index);
     
-    if (index === nFlowers - 1) return; // No rotation for the center flower
-    const angle = (2 * Math.PI / (nFlowers - 1)) * index;
-    if (controlsRef.current) {
-      controlsRef.current.setAzimuthalAngle(angle);
-      controlsRef.current.update();
-    }
+    // if (hasCenterFlower && index === nFlowers - 1) return; // No rotation for the center flower
+    // const angle = (2 * Math.PI / (nFlowers - 1)) * index;
+    // if (controlsRef.current) {
+    //   controlsRef.current.setAzimuthalAngle(angle);
+    //   controlsRef.current.update();
+    // }
   };
 
   useEffect(() => {
-    if (selectedFlowerIdx === nFlowers - 1) return; // No rotation for the center flower
-    const angle = (2 * Math.PI / (nFlowers - 1)) * selectedFlowerIdx;
+    if (hasCenterFlower && (selectedFlowerIdx === nFlowers - 1)) return; // No rotation for the center flower
+    const nFlowersAround = hasCenterFlower ? nFlowers - 1 : nFlowers;
+    const angle = (2 * Math.PI / nFlowersAround) * selectedFlowerIdx;
     if (controlsRef.current) {
       controlsRef.current.setAzimuthalAngle(angle);
       controlsRef.current.update();
     }
-  }, [selectedFlowerIdx, nFlowers]);
+  }, [hasCenterFlower, selectedFlowerIdx, nFlowers]);
   
-  const { positions, rotations } = generateFlowerPositions(nFlowers);
+  const { positions, rotations } = generateFlowerPositions(nFlowers, hasCenterFlower);
   const normalisedBrightness = globalState.flowersBrightness / 7;
 
   return (

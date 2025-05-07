@@ -5,6 +5,7 @@ type UserType = {
     userName: string,
     clientId: string,
     mqttToken: string,
+    nFlowers: number,
   }
 };
 
@@ -15,6 +16,7 @@ const useUser = () => {
   
   const encodedClientId = params.get('clientId');
   const encodedMqttToken = params.get('mqttToken');
+  const nFlowers = params.get('nFlowers');
 
   if(encodedClientId && encodedMqttToken) {
     const clientId = decodeURI(encodedClientId);
@@ -23,6 +25,7 @@ const useUser = () => {
       userName: window.atob(clientId),
       clientId: 'PetalGlow-' + clientId,
       mqttToken,
+      nFlowers: nFlowers ? parseInt(nFlowers) : 3,
     }};
 
     // Deep object comparison

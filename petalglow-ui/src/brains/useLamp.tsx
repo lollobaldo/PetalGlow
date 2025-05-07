@@ -5,7 +5,7 @@ import { HexColor, hexToHsva, hsvaToHsv } from '@uiw/color-convert';
 import { compose, scaleAndRound } from './utils';
 import { presets } from './presets';
 
-export const FLOWER_COUNT = 1;
+export const FLOWER_COUNT = 3;
 
 export interface FlowerState {
   color: HexColor;

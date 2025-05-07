@@ -11,10 +11,10 @@
 #undef MODULE_NAME
 #define MODULE_NAME "LmpMan"
 
-#define FLOWERS_DATA_PIN 3
-// #define STEMS_DATA_PIN 4 // teensy
+#define FLOWERS_DATA_PIN 2
+#define STEMS_DATA_PIN 3 // teensy
 // #define STEMS_DATA_PIN 0 // waveshare
-#define STEMS_DATA_PIN 6 // trial
+// #define STEMS_DATA_PIN 6 // trial
 
 unsigned long fadeStartTime;
 unsigned long lastStemValue;

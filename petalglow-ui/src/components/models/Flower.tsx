@@ -68,7 +68,8 @@ const Flower: React.FC<FlowerProps> = ({
       {/* Stem */}
       <mesh position={[0, 0, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[0.05, 0.05, 2, 8]} />
-        <meshStandardMaterial color="#4a8505" />
+        <meshStandardMaterial color="#00ff00" />
+        {/* <meshStandardMaterial color="#4a8505" /> */}
       </mesh>
       {clonedTulip && (
         <group position={[0, 1, 0]} scale={scale}>
